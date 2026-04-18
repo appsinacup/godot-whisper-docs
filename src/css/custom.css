@@ -1,0 +1,45 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #c78a72;
+  --ifm-color-primary-dark: #bb7b61;
+  --ifm-color-primary-darker: #b17358;
+  --ifm-color-primary-darkest: #935c44;
+  --ifm-color-primary-light: #cf9984;
+  --ifm-color-primary-lighter: #d4a28e;
+  --ifm-color-primary-lightest: #e2bcb0;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #d7a28c;
+  --ifm-color-primary-dark: #cd9279;
+  --ifm-color-primary-darker: #c7896e;
+  --ifm-color-primary-darkest: #ad6d4d;
+  --ifm-color-primary-light: #ddaf9c;
+  --ifm-color-primary-lighter: #e1b7a6;
+  --ifm-color-primary-lightest: #edd1c6;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.hero--primary {
+  background: linear-gradient(180deg, #f8f1ec 0%, #f1e3da 100%);
+  color: #5b3828;
+}
+
+[data-theme='dark'] .hero--primary {
+  background: linear-gradient(180deg, #4a342b 0%, #3e2b24 100%);
+  color: #f7ebe4;
+}
+
+.hero--primary .hero__subtitle,
+.hero--primary .hero__title {
+  color: inherit;
+}
