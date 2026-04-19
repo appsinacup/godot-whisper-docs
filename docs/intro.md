@@ -23,7 +23,7 @@ Go to **Project** → **Project Settings**. Check the **Enabled** checkbox for *
 
 ## Download a language model
 
-You can either download it manually from [Hugging Face](https://huggingface.co/ggerganov/whisper.cpp/tree/main) or go to the **Model Downloader** window on the right of the **Inspector** (appears after you activated the plugin). select a **Language Model to Download** and click **Download**. You may need to alt-tab or restart the editor for the asset to appear.
+You can either download it manually from [Hugging Face](https://huggingface.co/ggerganov/whisper.cpp/tree/main) or go to the **WhisperDock** window on the right of the **Groups** (appears after you activated the plugin. Groups is after Signals, which is after Inspector). select a **Language Model to Download** and click **Download**. You may need to alt-tab or restart the editor for the asset to appear.
 
 :::tip Recommended model
 **large-v3-turbo (Q5_0)** offers nearly large-v3 quality at 3× the speed — a great default for most projects.
