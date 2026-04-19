@@ -4,20 +4,20 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: 'Fast',
+    title: 'GPU Accelerated',
     Svg: require('@site/static/img/undraw_voice-notes_x4kp.svg').default,
     description: (
       <>
-        Realtime audio to text. And works on Desktop, Mobile and Web
+        Realtime audio to text with Metal, OpenCL + Vulkan, and WebGPU across Desktop, Mobile and Web.
       </>
     ),
   },
   {
-    title: 'Multiple Languages',
+    title: '99 Languages',
     Svg: require('@site/static/img/undraw_speech-to-text_4kov.svg').default,
     description: (
       <>
-        Speak in any language.
+        Automatic language detection or manual selection. English‑only models available for extra speed.
       </>
     ),
   },
@@ -26,7 +26,7 @@ const FeatureList = [
     Svg: require('@site/static/img/undraw_sync_pe2t.svg').default,
     description: (
       <>
-        Works on device without internet. Model sizes from 40MB to 2GB.
+        Runs entirely on device — no internet needed. Quantized models from 32 MB to 1.6 GB.
       </>
     ),
   },

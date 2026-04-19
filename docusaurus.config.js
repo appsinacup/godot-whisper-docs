@@ -9,7 +9,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Godot Whisper',
-  tagline: '(On Device) Whisper (audio to text) plugin for Godot',
+  tagline: 'GPU accelerated speech to text Whisper plugin for Godot.',
   favicon: 'img/whisper_logo.png',
 
   // Set the production url of your site here
