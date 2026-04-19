@@ -6,6 +6,14 @@ sidebar_position: 3
 
 All OpenAI Whisper models are supported. Load the corresponding `.bin` file — no code changes needed. Models can be downloaded directly in the Godot editor or from [Hugging Face](https://huggingface.co/ggerganov/whisper.cpp/tree/main).
 
+## Download a model from the editor
+
+Go to the **WhisperDock** window on the right of the **Groups** (appears after you activated the plugin. Groups is after Signals, which is after Inspector). select a **Language Model to Download** and click **Download**. You may need to alt-tab or restart the editor for the asset to appear.
+
+:::tip Recommended model
+**large-v3-turbo (Q5_0)** offers nearly large-v3 quality at 3× the speed — a great default for most projects.
+:::
+
 ## Multilingual Models
 
 | Model | Params | Full (f16) | Q8_0 | Q5_0 / Q5_1 | Best for |
