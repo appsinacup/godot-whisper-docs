@@ -8,7 +8,7 @@ Get started by **installing the plugin**, enabling it and downloading a language
 
 ## What you'll need
 
-- [Godot](https://godotengine.org/download/) version 4.1 or above.
+- [Godot](https://godotengine.org/download/) version 4 or above.
 - [Godot Whisper](https://godotengine.org/asset-library/asset/2638) plugin from the Godot Asset Library.
 
 ## Install the plugin
