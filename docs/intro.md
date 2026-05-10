@@ -4,33 +4,52 @@ sidebar_position: 1
 
 # Getting Started
 
-Get started by **installing the plugin**, enabling it and downloading a language model.
+## Install The Plugin
 
-## What you'll need
+1. Open your Godot project.
+2. Open **AssetLib**.
+3. Search for **Godot Whisper**.
+4. Download and install the addon.
+5. Enable it in **Project → Project Settings → Plugins**.
 
-- [Godot](https://godotengine.org/download/) version 4 or above.
-- [Godot Whisper](https://godotengine.org/asset-library/asset/2638) plugin from the Godot Asset Library.
+## Download Models
 
-## Install the plugin
+After enabling the plugin, open **Project → Tools → Whisper Models** and download:
+- a Whisper language model for `language_model`
+- (optionally) a Silero VAD model for `vad_model` when using realtime capture
 
-First create a new **Godot Project**. Next click on the **AssetLib** tab and search for the **Godot Whisper** addon and click on it.
+Downloaded models are saved to:
 
-Then click **Download** and **Install**.
+```text
+res://addons/godot_whisper/models/
+```
 
-## Activate the plugin
+:::tip Recommended first setup
+Download `large-v3-turbo-q5_0` for desktop quality/speed balance.
 
-Go to **Project** → **Project Settings**. Check the **Enabled** checkbox for **Godot Whisper**.
-
-## Download a language model
-
-You can either download it manually from [Hugging Face](https://huggingface.co/ggerganov/whisper.cpp/tree/main) or go to the **WhisperDock** window on the right of the **Groups** (appears after you activated the plugin. Groups is after Signals, which is after Inspector). select a **Language Model to Download** and click **Download**. You may need to alt-tab or restart the editor for the asset to appear.
-
-:::tip Recommended model
-**large-v3-turbo (Q5_0)** offers nearly large-v3 quality at 3× the speed — a great default for most projects.
+Download `silero-v6.2.0` if you use `CaptureStreamToText` realtime microphone transcription.
 :::
 
-## Global audio settings
+## Add A Transcription Node
 
-Go to **Project → Project Settings → General → Audio → Input** (enable **Advanced Settings**).
+For one-off WAV transcription, add `AudioStreamToText`.
 
-Because microphone transcription requires 16 kHz audio, you can optionally change the audio driver mix rate to `16000` at `audio/driver/mix_rate`. This avoids resampling overhead (saves ~50–100 ms on larger audio), but lowers overall audio quality.
+For realtime microphone transcription, add `CaptureStreamToText`.
+
+Set:
+
+- `language_model` to a `WhisperResource` pointing at your Whisper `.bin`
+- `vad_model` to a `WhisperResource` pointing at `ggml-silero-v6.2.0.bin` when using Silero VAD
+
+## Audio Settings
+
+Realtime capture resamples audio to 16 kHz before inference.
+
+Optional: set **Project Settings → Audio → Driver → Mix Rate** to `16000` to avoid resampling overhead. This may reduce overall game audio quality, so only use it if speech transcription is the main audio workload.
+
+## Next Steps
+
+- [Whisper Models](documentation/models.md)
+- [Voice Activity Detection](documentation/vad.md)
+- [Realtime Transcription](documentation/realtime.md)
+- [Nodes](documentation/nodes.md)

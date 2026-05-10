@@ -3,7 +3,7 @@
     "position": 3,
     "link": {
       "type": "generated-index",
-      "description": "Comprehensive documentation for the Godot Whisper plugin — features, models, platforms, VAD, and node reference."
+      "description": "Comprehensive documentation for the Godot Whisper plugin — features, platforms, models, VAD, realtime transcription, token output, node reference, and settings."
     }
   }
   

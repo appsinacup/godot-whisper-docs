@@ -1,110 +1,161 @@
 ---
-sidebar_position: 5
+sidebar_position: 7
 ---
 
 # Nodes
 
-Godot Whisper provides a core C++ node (`SpeechToText`) and several GDScript helper scripts for common use cases.
-
----
+Godot Whisper provides a native `SpeechToText` node plus GDScript helpers for common workflows.
 
 ## SpeechToText
 
-`SpeechToText` extends `Node` and is the core transcription engine. All other helpers build on top of it.
+Core transcription node.
 
 ### Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `language` | `Language` enum | `English` (1) | Target language (99 languages + Auto) |
-| `language_model` | `WhisperResource` | `null` | Whisper model `.bin` resource |
-| `enable_vad` | `bool` | `false` | Enable Silero neural VAD in `transcribe()` |
-| `vad_model_path` | `String` | `""` | Path to Silero VAD `.bin` model |
-| `flash_attn` | `bool` | `true` | Enable flash attention (reloads model on change) |
+| `language` | `Language` enum | `English` | Target language. Use `Auto` only with multilingual models. |
+| `language_model` | `WhisperResource` | `null` | Whisper language model resource. Required before transcription. |
+| `vad_model` | `WhisperResource` | `null` | Silero VAD model resource. Setting it enables Silero VAD. |
+| `vad_threshold` | `float` | `0.5` | Silero speech probability threshold. |
+| `vad_min_speech_duration_ms` | `int` | `250` | Minimum Silero speech segment duration. |
+| `vad_min_silence_duration_ms` | `int` | `100` | Silence required before Silero splits segments. |
+| `vad_max_speech_duration_s` | `float` | `0.0` | Maximum Silero segment length. `0.0` means unlimited. |
+| `vad_speech_pad_ms` | `int` | `30` | Padding around Silero speech segments. |
+| `vad_samples_overlap` | `float` | `0.1` | Overlap between Silero speech ranges, in seconds. |
+| `token_timestamps` | `bool` | `true` | Enables token timestamp metadata. |
+| `flash_attn` | `bool` | `true` | Enables flash attention when supported. Changing it reloads the model. |
 
 ### Methods
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `transcribe(buffer, initial_prompt, audio_ctx)` | `Array` | Run inference; returns `[full_text, {token_dicts}...]` |
-| `voice_activity_detection(buffer)` | `bool` | Simple energy-based VAD |
-| `detect_speech_segments(buffer)` | `Array` | Silero VAD; returns `[{start, end}...]` |
-| `resample(buffer: PackedVector2Array)` | `PackedFloat32Array` | Resample stereo audio to 16 kHz mono |
+| `transcribe(buffer, initial_prompt, audio_ctx)` | `Array` | Runs Whisper on 16 kHz mono samples. Returns `[full_text, token_dict, ...]`. |
+| `voice_activity_detection(buffer)` | `bool` | Simple energy-based VAD over recent samples. |
+| `detect_speech_segments(buffer)` | `Array` | Runs Silero VAD and returns `[{ "start": cs, "end": cs }, ...]`. |
+| `get_last_speech_segments()` | `Array` | Returns the latest Silero segments from the last `transcribe()` call. |
+| `resample(buffer, interpolator_type)` | `PackedFloat32Array` | Resamples stereo `PackedVector2Array` audio to 16 kHz mono. |
 
-### Enums
+### `transcribe()` Return Value
 
-| Enum | Values | Description |
-|------|--------|-------------|
-| `Language` | 0–100 | `Auto` (0), `English` (1), `Chinese` (2), … 99 languages |
-| `InterpolatorType` | 5 modes | Resampling interpolation modes |
-| `SpeechSamplingRate` | `16000` | Expected input sample rate |
+```gdscript
+var result := speech_to_text.transcribe(samples, initial_prompt, 0)
+var full_text: String = result.pop_front()
+```
 
----
+Remaining items are token dictionaries. See [Token Output](token-output.md).
 
 ## WhisperResource
 
-`WhisperResource` extends `Resource` and wraps a Whisper `.bin` model file.
-
-### Properties
+Resource wrapper around a `.bin` model file.
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `file` | `String` | Path to the `.bin` model file |
+| `file` | `String` | Path to the `.bin` model file. |
 
-### Methods
+Use `WhisperResource` for both `language_model` and `vad_model`. This helps Godot export the model files.
 
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `get_content()` | `PackedByteArray` | Load and return the raw model bytes |
+## AudioStreamToText
 
----
+Editor-friendly helper for one-shot `AudioStreamWAV` transcription.
 
-## GDScript Helpers
+| Property | Type | Description |
+|----------|------|-------------|
+| `initial_prompt` | `String` | Prompt passed to Whisper before decoding. |
+| `audio_stream` | `AudioStreamWAV` | WAV file to transcribe. |
+| `text` | `String` | Transcribed result. |
+| `start_transcribe` | `bool` | Set from the Inspector to run transcription. |
 
-These are ready-made GDScript nodes that wrap `SpeechToText` for common workflows.
+Supported WAV formats:
 
-### AudioStreamToText
+- `AudioStreamWAV.FORMAT_8_BITS`
+- `AudioStreamWAV.FORMAT_16_BITS`
 
-One-shot `AudioStreamWAV` transcription. Can be used **in the editor** (`@tool`-compatible) — add a WAV audio source and click the **start_transcribe** button.
+For other audio sources, decode samples yourself or use `CaptureStreamToText` for live capture.
 
-Typical transcription time with the `tiny.en` model is ~0.3 s.
+## CaptureStreamToText
 
-:::note Supported WAV formats
-The `transcribe` function takes a `PackedFloat32Array` buffer. Currently only `AudioStreamWAV.FORMAT_8_BITS` and `AudioStreamWAV.FORMAT_16_BITS` are supported. For other formats, write a custom decoder or see how `CaptureStreamToText` handles runtime decoding.
-:::
+Realtime microphone/audio-bus transcription helper.
 
-### CaptureStreamToText
+It captures from an `AudioEffectCapture`, resamples to 16 kHz, runs `transcribe()` repeatedly, handles backlog, and emits text signals.
 
-Real-time microphone transcription with configurable VAD, sentence detection, and audio bus capture. Captures audio from the microphone, **resamples** it to 16 kHz if necessary, and runs `transcribe` every `transcribe_interval`.
+### Core Properties
 
-**Signal:** `transcribed_msg(is_complete: bool, new_text: String)`
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `initial_prompt` | `String` | `""` | Prompt passed to Whisper. |
+| `recording` | `bool` | `true` | Starts/stops capture thread. |
+| `step_ms` | `int` | `1000` | Minimum new audio before another transcription. |
+| `length_ms` | `int` | `5000` | Rolling audio window length. |
+| `keep_ms` | `int` | `200` | Previous audio kept to avoid clipped words. |
+| `emit_partial_results` | `bool` | `true` | Emit changing partial text. |
+| `record_bus` | `String` | `"Record"` | Audio bus with `AudioEffectCapture`. |
+| `audio_effect_capture_index` | `int` | `0` | Capture effect index on `record_bus`. |
 
-This is the node to use for **realtime** speech-to-text in your game or application.
+### Backlog Properties
 
-### LabelTranscribe
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `max_pending_audio_ms` | `int` | `30000` | Max queued audio before dropping oldest queued samples. `0` means keep all queued audio. |
 
-`RichTextLabel` display helper that connects to `CaptureStreamToText` output and renders transcribed text automatically.
+### Sentence Commit Properties
 
-### ModelDownloader
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `commit_on_vad_silence` | `bool` | `true` | Commit after Silero sees trailing silence. Requires `vad_model`. |
+| `commit_silence_ms` | `int` | `700` | Trailing silence required before commit. |
+| `commit_on_stable_punctuation` | `bool` | `true` | Commit when punctuated text stays stable. |
+| `stable_punctuation_steps` | `int` | `2` | Matching punctuated updates required. |
+| `commit_on_window_timeout` | `bool` | `true` | Commit before rolling window drops old words. |
 
-Editor utility to download Whisper and VAD models directly from Hugging Face without leaving the Godot editor.
+### Signals
 
----
+| Signal | Description |
+|--------|-------------|
+| `transcribed_msg(is_complete, new_text)` | Plain text update. |
+| `transcribed_msg_confidence(is_complete, new_text, confidence)` | Text update plus average display-token confidence. |
+| `transcribed_msg_tokens(is_complete, new_text, tokens)` | Text update plus display tokens with confidence. |
 
-## Flash Attention
+`is_complete` means the realtime chunk was committed to history. It does not guarantee that Whisper detected a grammatical sentence boundary.
 
-Flash Attention reduces memory usage and improves inference speed, especially for longer audio. It is **enabled by default** — disable it via the `flash_attn` property on the `SpeechToText` node if needed.
+See [Realtime Transcription](realtime.md).
 
-## Supported Languages
+## LabelTranscribe
 
-The plugin supports **99 languages** via the `Language` enum on the `SpeechToText` node. Set to `Auto` for automatic language detection (multilingual models only).
+`RichTextLabel` helper for displaying realtime output.
 
-For best results with English, use English-only models (`.en` suffix). For other languages, use multilingual models and set the `language` property.
+It keeps completed text, shows partial text, and can color display tokens by confidence.
 
-See the [OpenAI Whisper paper](https://cdn.openai.com/papers/whisper.pdf) for detailed per-language accuracy benchmarks.
+Connect it to:
+
+```gdscript
+capture_stream_to_text.transcribed_msg_tokens.connect(
+    label_transcribe._on_speech_to_text_transcribed_msg_tokens
+)
+```
+
+## ModelDownloader
+
+Editor utility behind **Project → Tools → Whisper Models**.
+
+It downloads models from Hugging Face to `res://addons/godot_whisper/models/`, marks downloaded models with `*`, and shows model size/memory guidance.
+
+## Languages
+
+The `Language` enum supports `Auto` and 99 languages.
+
+Use `.en` models for English-only projects. Use multilingual models for non-English or mixed-language speech.
 
 ## Initial Prompt
 
-For Chinese, if you want to select between Traditional and Simplified, provide an initial prompt with the variant you want — the model should continue with that variant. See [Whisper Discussion #277](https://github.com/openai/whisper/discussions/277).
+`initial_prompt` can guide style, punctuation, vocabulary, or writing system.
 
-If you have problems with punctuation, you can give it an initial prompt with punctuation. See [Whisper Discussion #194](https://github.com/openai/whisper/discussions/194).
+Examples:
+
+```text
+以下是普通話的句子。
+```
+
+```text
+The following is a punctuated transcript.
+```
