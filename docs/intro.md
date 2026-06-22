@@ -7,7 +7,7 @@ sidebar_position: 1
 ## Install The Plugin
 
 1. Open your Godot project.
-2. Open **AssetLib**.
+2. Open **Asset Store**.
 3. Search for **Godot Whisper**.
 4. Download and install the addon.
 5. Enable it in **Project → Project Settings → Plugins**.
